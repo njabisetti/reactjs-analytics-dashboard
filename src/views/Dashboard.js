@@ -4,13 +4,16 @@ import DashboardStat from "./components/DashboardStat";
 
 import { of } from "rxjs";
 import {
-  temperature$,
-  pressure$,
-  humidity$,
+  getTemperature,
+  getPressure,
+  getHumidity
+} from "../EventSource";
+import {
   TEMPERATURE_TYPE,
   PRESSURE_TYPE,
   HUMIDITY_TYPE,
 } from "../App";
+
 import { timeoutWith } from "rxjs/operators";
 
 import { unique } from "../observables/unique";
@@ -21,29 +24,29 @@ const DEBOUNCE_TIME = 100;
 function Dashboard() {
   const [stats, setStats] = useState();
 
-  useEffect(() => {
+  useEffect(() => {    
     const stats$ = unique(
       DEBOUNCE_TIME,
       TIMEOUT_VALUE,
-      temperature$.pipe(
+      getTemperature().pipe(
         timeoutWith(
           TIMEOUT_VALUE,
           of({ type: TEMPERATURE_TYPE, title: "Temperature", value: "N/A" })
         )
       ),
-      pressure$.pipe(
+      getPressure().pipe(
         timeoutWith(
           TIMEOUT_VALUE,
           of({ type: PRESSURE_TYPE, title: "Air Pressure", value: "N/A" })
         )
       ),
-      humidity$.pipe(
+      getHumidity().pipe(
         timeoutWith(
           TIMEOUT_VALUE,
           of({ type: HUMIDITY_TYPE, title: "Humidity", value: "N/A" })
         )
       )
-    );
+    );    
     const subscription = stats$.subscribe(setStats, (error) => {
       console.log(`${error}`);
     });
